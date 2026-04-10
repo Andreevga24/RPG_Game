@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Вход — Новые приключения фанфиков</title>
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <div id="toast-container"></div>
+  <div style="min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; background: radial-gradient(ellipse at 30% 20%, #0d1a33 0%, #05080f 60%), radial-gradient(ellipse at 70% 80%, #0a1428 0%, transparent 50%);">
+    <div style="font-size:48px; margin-bottom:8px; filter: drop-shadow(0 0 12px rgba(116,192,252,0.5));">⚔️</div>
+    <h1 style="color:var(--arcane-bright); font-size:32px; letter-spacing:4px; margin-bottom:40px; text-shadow: 0 0 30px rgba(116,192,252,0.5), 0 0 60px rgba(59,91,219,0.3);">НОВЫЕ ПРИКЛЮЧЕНИЯ ФАНФИКОВ</h1>
+
+    <div class="form-container">
+      <h2 class="form-title">Войти в мир</h2>
+      <form id="loginForm" novalidate>
+        <div class="form-group">
+          <label for="username">Логин</label>
+          <input type="text" id="username" placeholder="Введите логин" autocomplete="username">
+          <div class="field-error" id="username-error"></div>
+        </div>
+        <div class="form-group">
+          <label for="password">Пароль</label>
+          <div class="password-wrapper">
+            <input type="password" id="password" placeholder="Введите пароль" autocomplete="current-password">
+            <button type="button" class="toggle-password" id="togglePwd" aria-label="Показать пароль">👁</button>
+          </div>
+          <div class="field-error" id="password-error"></div>
+        </div>
+        <button type="submit" class="btn" style="width:100%; margin-top:8px;" id="submitBtn">
+          <span id="btnText">Войти</span>
+          <span class="spinner spinner-sm" id="btnSpinner" style="display:none;"></span>
+        </button>
+      </form>
+      <div class="form-footer">
+        Нет аккаунта? <a href="register.html">Зарегистрироваться</a>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="../js/auth.js"></script>
+  <script type="module" src="../js/ui.js"></script>
+  <script type="module">
+    import { initMist } from '../js/mist.js';
+    initMist(10);
+    import { login } from '../js/auth.js';
+    import { showToast, showFieldError, clearFieldError } from '../js/ui.js';
+
+    // Toggle password visibility
+    document.getElementById('togglePwd').addEventListener('click', () => {
+      const input = document.getElementById('password');
+      const btn = document.getElementById('togglePwd');
+      input.type = input.type === 'password' ? 'text' : 'password';
+      btn.textContent = input.type === 'password' ? '👁' : '🙈';
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      let valid = true;
+
+      clearFieldError('username-error');
+      clearFieldError('password-error');
+
+      if (!username) { showFieldError('username-error', 'Введите логин'); valid = false; }
+      if (!password) { showFieldError('password-error', 'Введите пароль'); valid = false; }
+      if (!valid) return;
+
+      const btn = document.getElementById('submitBtn');
+      const btnText = document.getElementById('btnText');
+      const spinner = document.getElementById('btnSpinner');
+      btn.disabled = true; btnText.style.display = 'none'; spinner.style.display = 'inline-block';
+
+      try {
+        await login(username, password);
+        showToast('Добро пожаловать!', 'success');
+        setTimeout(() => window.location.href = '../pages/game.html', 800);
+      } catch (err) {
+        showToast(err.message || 'Ошибка входа', 'error');
+      } finally {
+        btn.disabled = false; btnText.style.display = 'inline'; spinner.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Новые приключения фанфиков</title>
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <div id="toast-container"></div>
+
+  <!-- Level Up Modal -->
+  <div class="modal-overlay hidden" id="levelUpModal">
+    <div class="modal" style="max-width:500px;">
+      <div style="text-align:center; margin-bottom:20px;">
+        <div style="font-size:56px; animation:glow-s 1.5s infinite;">🌟</div>
+        <h2 class="modal-title" id="levelUpTitle" style="font-size:26px; margin-top:8px;">Новый уровень!</h2>
+        <div id="levelUpSubtitle" style="color:var(--text-dim); font-size:14px;"></div>
+      </div>
+      <div id="levelUpPointsLeft" style="text-align:center; margin-bottom:16px; font-size:15px; color:var(--primary-gold);"></div>
+      <div id="levelUpStats" class="stats-list" style="gap:8px;"></div>
+      <div class="modal-actions">
+        <button class="btn btn-success" id="levelUpCloseBtn">Готово</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fight Modal -->
+  <div class="modal-overlay hidden" id="fightModal">
+    <div class="modal" style="max-width:640px;">
+      <h2 class="modal-title" id="fightTitle">⚔️ Битва</h2>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+        <div>
+          <div class="bar-label"><span>Ваше HP</span><span id="fightPlayerHp">-/-</span></div>
+          <div class="bar-wrap bar-hp"><div class="bar-fill" id="fightPlayerBar" style="width:100%"></div></div>
+        </div>
+        <div>
+          <div class="bar-label"><span>HP монстра</span><span id="fightMonsterHp">-/-</span></div>
+          <div class="bar-wrap bar-hp"><div class="bar-fill" id="fightMonsterBar" style="width:100%"></div></div>
+        </div>
+      </div>
+      <div class="fight-log" id="fightLog"></div>
+      <div class="modal-actions" id="fightActions">
+        <button class="btn" id="fightStartBtn">⚔️ Начать бой</button>
+        <button class="btn btn-danger" id="fightCancelBtn">Отступить</button>
+      </div>
+      <div id="fightResult" style="display:none; text-align:center; padding:20px;">
+        <div id="fightResultIcon" style="font-size:48px; margin-bottom:12px;"></div>
+        <div id="fightResultText" style="font-size:18px; color:var(--primary-gold); margin-bottom:8px;"></div>
+        <div id="fightResultRewards" style="color:var(--text-dim); font-size:14px;"></div>
+        <button class="btn" id="fightCloseBtn" style="margin-top:20px;">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Fight Modal -->
+  <div class="modal-overlay hidden" id="confirmModal">
+    <div class="modal">
+      <h2 class="modal-title">Начать бой?</h2>
+      <div id="confirmMonsterInfo" style="text-align:center; padding:16px;"></div>
+      <div class="modal-actions">
+        <button class="btn btn-danger" id="confirmFightBtn">⚔️ В бой!</button>
+        <button class="btn" id="confirmCancelBtn">Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Group Modal -->
+  <div class="modal-overlay hidden" id="groupModal">
+    <div class="modal">
+      <h2 class="modal-title">Создать группу</h2>
+      <div class="form-group">
+        <label for="groupName">Название группы</label>
+        <input type="text" id="groupName" placeholder="Введите название">
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-success" id="createGroupConfirmBtn">Создать</button>
+        <button class="btn" id="cancelGroupBtn">Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-layout">
+    <!-- HEADER -->
+    <header class="game-header">
+      <button class="burger-btn" id="burgerBtn" aria-label="Меню">
+        <span></span><span></span><span></span>
+      </button>
+      <div style="font-size:24px;">⚔️</div>
+      <div style="color:var(--primary-gold); font-size:18px; letter-spacing:2px; font-weight:bold;">НОВЫЕ ПРИКЛЮЧЕНИЯ ФАНФИКОВ</div>
+
+      <div class="char-header" id="charHeader">
+        <div class="spinner spinner-sm"></div>
+      </div>
+
+      <div style="margin-left:auto; display:flex; gap:10px; align-items:center;">
+        <span id="goldDisplay" style="color:var(--primary-gold); font-size:14px;">💰 0</span>
+        <button class="btn btn-danger" id="logoutBtn" style="padding:6px 14px; font-size:12px;">Выйти</button>
+      </div>
+    </header>
+
+    <div class="game-main">
+      <!-- SIDEBAR -->
+      <aside class="game-sidebar" id="gameSidebar">
+        <div class="sidebar-section-title">Навигация</div>
+        <ul class="sidebar-nav">
+          <li><a href="#" class="active" data-tab="city">🏙️ Город</a></li>
+          <li><a href="#" data-tab="raid">🚪 Врата</a></li>
+          <li><a href="#" data-tab="leaderboard">🏆 Рейтинг</a></li>
+          <li><a href="#" data-tab="shop">🏪 Магазин</a></li>
+        </ul>
+        <div class="sidebar-section-title" style="margin-top:24px;">Персонаж</div>
+        <div id="sidebarCharInfo" style="padding:0 14px; font-size:13px; color:var(--text-dim); line-height:2;"></div>
+      </aside>
+
+      <!-- MAIN CONTENT -->
+      <main class="game-content">
+        <!-- CITY TAB -->
+        <div id="tab-city" class="tab-content">
+          <div id="cityContent"><div class="spinner"></div></div>
+        </div>
+
+        <!-- RAID TAB -->
+        <div id="tab-raid" class="tab-content" style="display:none;">
+          <div id="raidContent"><div class="spinner"></div></div>
+        </div>
+
+        <!-- LEADERBOARD TAB -->
+        <div id="tab-leaderboard" class="tab-content" style="display:none;">
+          <div id="leaderboardContent"><div class="spinner"></div></div>
+        </div>
+
+        <!-- SHOP TAB -->
+        <div id="tab-shop" class="tab-content" style="display:none;">
+          <div id="shopContent"><div class="spinner"></div></div>
+        </div>
+      </main>
+    </div>
+
+    <footer class="game-footer">
+      Новые приключения фанфиков &copy; 2026 — Все права защищены
+    </footer>
+  </div>
+
+  <script type="module" src="../js/app.js?v=2"></script>
+  <script type="module" src="../js/ui.js?v=2"></script>
+  <script type="module" src="../js/character.js?v=2"></script>
+  <script type="module" src="../js/city.js?v=2"></script>
+  <script type="module" src="../js/fight.js?v=2"></script>
+  <script type="module" src="../js/raid.js?v=2"></script>
+  <script type="module" src="../js/leaderboard.js?v=2"></script>
+  <script type="module" src="../js/shop.js?v=2"></script>
+  <script type="module" src="../js/game.js?v=2"></script>
+  <script type="module">
+    import { initMist } from '../js/mist.js?v=2';
+    initMist(14);
+  </script>
+</body>
+</html>

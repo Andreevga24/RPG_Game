@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Создание персонажа — Новые приключения фанфиков</title>
+  <link rel="stylesheet" href="../css/main.css">
+  <style>
+    .class-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:16px 0; }
+    .class-card {
+      border:2px solid var(--border-arcane); border-radius:10px; padding:14px 12px;
+      cursor:pointer; background:rgba(10,20,40,0.6); transition:all 0.2s; text-align:center;
+    }
+    .class-card:hover { border-color:var(--arcane); background:rgba(59,91,219,0.15); transform:translateY(-2px); }
+    .class-card.selected { border-color:var(--arcane-bright); background:rgba(59,91,219,0.25); box-shadow:0 0 16px var(--arcane-glow); }
+    .class-card-icon { font-size:36px; margin-bottom:6px; }
+    .class-card-name { font-size:15px; color:var(--arcane-bright); font-weight:bold; margin-bottom:6px; }
+    .class-card-lore { font-size:11px; color:var(--text-dim); line-height:1.5; }
+  </style>
+</head>
+<body>
+  <div id="toast-container"></div>
+  <div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at 30% 20%,#0d1a33 0%,#05080f 60%),radial-gradient(ellipse at 70% 80%,#0a1428 0%,transparent 50%);padding:20px;">
+
+    <div style="font-size:48px;margin-bottom:8px;filter:drop-shadow(0 0 14px rgba(116,192,252,0.6));">📖</div>
+    <h1 style="color:var(--arcane-bright);font-size:26px;letter-spacing:3px;margin-bottom:4px;text-shadow:0 0 20px rgba(116,192,252,0.5);">НОВЫЕ ПРИКЛЮЧЕНИЯ ФАНФИКОВ</h1>
+    <p style="color:var(--text-dim);margin-bottom:32px;text-align:center;font-size:13px;">Выбери свой класс и начни приключение</p>
+
+    <div class="form-container" style="max-width:560px;width:100%;">
+
+      <!-- Имя -->
+      <div class="form-group">
+        <label for="charName">Имя персонажа</label>
+        <input type="text" id="charName" placeholder="Введите имя героя">
+        <div class="field-error" id="name-error"></div>
+      </div>
+
+      <!-- Выбор класса -->
+      <div style="margin-top:20px;">
+        <div style="font-size:13px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Выбери класс</div>
+        <div class="class-grid" id="classGrid"></div>
+        <div class="field-error" id="class-error"></div>
+      </div>
+
+      <!-- Начальный ранг -->
+      <div style="margin-top:16px;padding:12px;border:1px solid var(--border-arcane);border-radius:8px;background:rgba(10,20,40,0.4);text-align:center;">
+        <div style="font-size:13px;color:var(--text-dim);margin-bottom:4px;">Начальный ранг</div>
+        <span class="rank-badge rank-E" style="font-size:18px;padding:4px 12px;">E</span>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">Ранг повышается через победы во Вратах</div>
+      </div>
+
+      <!-- Принять -->
+      <button class="btn btn-success" id="acceptBtn" style="width:100%;margin-top:20px;">✅ Начать приключение</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { apiFetch } from '../js/app.js';
+    import { showToast, showFieldError, clearFieldError } from '../js/ui.js';
+
+    const CLASSES = ['Tauran','Gnombaf','Arachnid','Angel'];
+    const CLASS_ICONS = { Tauran:'🐂', Gnombaf:'🧙', Arachnid:'🕷️', Angel:'👼' };
+    const CLASS_RU    = { Tauran:'Тауран', Gnombaf:'Гномбаф', Arachnid:'Арахнид', Angel:'Ангел' };
+    const CLASS_LORE  = {
+      Tauran:   'Дитя нежной любви человека к природе. Огромная физическая мощь, дубина и кувшин молока. Магии нет, интеллекта нет — зато есть дубина.',
+      Gnombaf:  'Дети гномов, изгнанные за дар к магии. Гильдия Борга Чистый Воздух. Массовые бафы на все случаи жизни. ДОРОГО.',
+      Arachnid: 'Однажды Арагогу стало скучно. Детки быстрые, ловкие, незаметные — все в папаню. Мама? Кто разберёт, что она из кокона мычит.',
+      Angel:    'Дети странного белого дождя. Прекрасны, патетичны, с крыльями. Непреодолимая тяга нести добро и причинять справедливость.',
+    };
+
+    let selectedClass = null;
+
+    document.getElementById('classGrid').innerHTML = CLASSES.map(c => `
+      <div class="class-card" id="card-${c}" onclick="selectClass('${c}')">
+        <div class="class-card-icon">${CLASS_ICONS[c]}</div>
+        <div class="class-card-name">${CLASS_RU[c]}</div>
+        <div class="class-card-lore">${CLASS_LORE[c]}</div>
+      </div>`).join('');
+
+    window.selectClass = (cls) => {
+      selectedClass = cls;
+      CLASSES.forEach(c => document.getElementById(`card-${c}`).classList.toggle('selected', c === cls));
+      clearFieldError('class-error');
+    };
+
+    document.getElementById('acceptBtn').addEventListener('click', async () => {
+      const name = document.getElementById('charName').value.trim();
+      clearFieldError('name-error');
+      clearFieldError('class-error');
+      let valid = true;
+      if (!name)          { showFieldError('name-error',  'Введите имя персонажа'); valid = false; }
+      if (!selectedClass) { showFieldError('class-error', 'Выберите класс');        valid = false; }
+      if (!valid) return;
+
+      try {
+        await apiFetch('/api/character', {
+          method: 'POST',
+          body: JSON.stringify({ name, char_class: selectedClass })
+        });
+        showToast('Персонаж создан! Добро пожаловать, ' + name + '!', 'success');
+        setTimeout(() => window.location.href = 'game.html', 1000);
+      } catch (err) {
+        showToast(err.message || 'Ошибка создания персонажа', 'error');
+      }
+    });
+  </script>
+  <script type="module" src="../js/app.js"></script>
+  <script type="module" src="../js/ui.js"></script>
+  <script type="module">
+    import { initMist } from '../js/mist.js';
+    initMist(10);
+  </script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Регистрация — Новые приключения фанфиков</title>
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <div id="toast-container"></div>
+  <div style="min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; background: radial-gradient(ellipse at 30% 20%, #0d1a33 0%, #05080f 60%), radial-gradient(ellipse at 70% 80%, #0a1428 0%, transparent 50%);">
+    <div style="font-size:48px; margin-bottom:8px; filter: drop-shadow(0 0 12px rgba(116,192,252,0.5));">⚔️</div>
+    <h1 style="color:var(--arcane-bright); font-size:32px; letter-spacing:4px; margin-bottom:40px; text-shadow: 0 0 30px rgba(116,192,252,0.5), 0 0 60px rgba(59,91,219,0.3);">НОВЫЕ ПРИКЛЮЧЕНИЯ ФАНФИКОВ</h1>
+
+    <div class="form-container">
+      <h2 class="form-title">Создать аккаунт</h2>
+      <form id="registerForm" novalidate>
+        <div class="form-group">
+          <label for="username">Логин</label>
+          <input type="text" id="username" placeholder="Минимум 3 символа" autocomplete="username">
+          <div class="field-error" id="username-error"></div>
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" placeholder="your@email.com" autocomplete="email">
+          <div class="field-error" id="email-error"></div>
+        </div>
+        <div class="form-group">
+          <label for="password">Пароль</label>
+          <div class="password-wrapper">
+            <input type="password" id="password" placeholder="Минимум 6 символов" autocomplete="new-password">
+            <button type="button" class="toggle-password" id="togglePwd1" aria-label="Показать пароль">👁</button>
+          </div>
+          <div class="field-error" id="password-error"></div>
+        </div>
+        <div class="form-group">
+          <label for="confirm">Подтверждение пароля</label>
+          <div class="password-wrapper">
+            <input type="password" id="confirm" placeholder="Повторите пароль" autocomplete="new-password">
+            <button type="button" class="toggle-password" id="togglePwd2" aria-label="Показать пароль">👁</button>
+          </div>
+          <div class="field-error" id="confirm-error"></div>
+        </div>
+        <button type="submit" class="btn" style="width:100%; margin-top:8px;" id="submitBtn">
+          <span id="btnText">Зарегистрироваться</span>
+          <span class="spinner spinner-sm" id="btnSpinner" style="display:none;"></span>
+        </button>
+      </form>
+      <div class="form-footer">
+        Уже есть аккаунт? <a href="login.html">Войти</a>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="../js/auth.js"></script>
+  <script type="module" src="../js/ui.js"></script>
+  <script type="module">
+    import { initMist } from '../js/mist.js';
+    initMist(10);
+    import { register } from '../js/auth.js';
+    import { showToast, showFieldError, clearFieldError } from '../js/ui.js';
+
+    function togglePwd(inputId, btnId) {
+      const input = document.getElementById(inputId);
+      const btn = document.getElementById(btnId);
+      btn.addEventListener('click', () => {
+        input.type = input.type === 'password' ? 'text' : 'password';
+        btn.textContent = input.type === 'password' ? '👁' : '🙈';
+      });
+    }
+    togglePwd('password', 'togglePwd1');
+    togglePwd('confirm', 'togglePwd2');
+
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const confirm = document.getElementById('confirm').value;
+      let valid = true;
+
+      ['username-error','email-error','password-error','confirm-error'].forEach(clearFieldError);
+
+      if (username.length < 3) { showFieldError('username-error', 'Минимум 3 символа'); valid = false; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showFieldError('email-error', 'Некорректный email'); valid = false; }
+      if (password.length < 6) { showFieldError('password-error', 'Минимум 6 символов'); valid = false; }
+      if (password !== confirm) { showFieldError('confirm-error', 'Пароли не совпадают'); valid = false; }
+      if (!valid) return;
+
+      const btn = document.getElementById('submitBtn');
+      const btnText = document.getElementById('btnText');
+      const spinner = document.getElementById('btnSpinner');
+      btn.disabled = true; btnText.style.display = 'none'; spinner.style.display = 'inline-block';
+
+      try {
+        await register(username, email, password);
+        showToast('Аккаунт создан!', 'success');
+        setTimeout(() => window.location.href = 'create-character.html', 800);
+      } catch (err) {
+        showToast(err.message || 'Ошибка регистрации', 'error');
+      } finally {
+        btn.disabled = false; btnText.style.display = 'inline'; spinner.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>
