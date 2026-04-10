@@ -18,12 +18,12 @@ uvicorn main:app --reload --port 8000
 
 ```bash
 # Python
-python -m http.server 3000 --directory frontend
+python -m http.server 3001 --directory frontend
 
 # или VS Code Live Server
 ```
 
-Затем откройте http://localhost:3000
+Затем откройте http://127.0.0.1:3001/pages/game.html
 
 ## API документация
 
